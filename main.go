@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"log"
+	"time"
 
 	"github.com/dbeliakov/stocks-bot/bot"
 	"github.com/dbeliakov/stocks-bot/stocks"
 	"github.com/dbeliakov/stocks-bot/stocks/cached"
 	"github.com/dbeliakov/stocks-bot/stocks/finnhub"
-	"github.com/dbeliakov/stocks-bot/storage"
+	"github.com/dbeliakov/stocks-bot/storage/boltdb"
 )
 
 var (
@@ -22,11 +23,15 @@ func init() {
 	flag.Parse()
 }
 
-func main() {
-	var p stocks.Provider = finnhub.NewProvider(finnhubToken)
-	p = cached.NewProvider(p, 1000)
+const (
+	finnhubURL = "https://finnhub.io/api/v1/quote"
+)
 
-	s, err := storage.NewStorage("./stocks.db")
+func main() {
+	var p stocks.Provider = finnhub.NewProvider(finnhubURL, finnhubToken)
+	p = cached.NewProvider(p, 1000, time.Minute)
+
+	s, err := boltdb.NewStorage("./stocks.db")
 	if err != nil {
 		log.Fatalf("Failed to create storage: %+v", err)
 	}
