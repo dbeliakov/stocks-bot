@@ -50,7 +50,7 @@ type Processor struct {
 	chatID   int64
 	messages chan<- Reply
 	provider stocks.Provider
-	storage  *storage.Storage
+	storage  storage.Storage
 }
 
 type IncomingMessage struct {
@@ -63,7 +63,7 @@ type Reply struct {
 	Message string
 }
 
-func NewProcessor(provider stocks.Provider, storage *storage.Storage, chatID int64, messages chan<- Reply) *Processor {
+func NewProcessor(provider stocks.Provider, storage storage.Storage, chatID int64, messages chan<- Reply) *Processor {
 	p := &Processor{
 		messages: messages,
 		provider: provider,

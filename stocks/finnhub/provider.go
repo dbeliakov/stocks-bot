@@ -16,20 +16,22 @@ const (
 )
 
 type Provider struct {
+	apiURL     string
 	httpClient *resty.Client
 }
 
 var _ stocks.Provider = &Provider{}
 
-func NewProvider(apiKey string) *Provider {
+func NewProvider(apiURL, apiKey string) *Provider {
 	return &Provider{
 		httpClient: resty.New().SetHeader(authHeader, apiKey),
+		apiURL:     apiURL,
 	}
 }
 
 func (p *Provider) CurrentPrice(symbol string) (float64, error) {
 	resp, err := p.httpClient.R().
-		SetQueryParam("symbol", symbol).Get("https://finnhub.io/api/v1/quote")
+		SetQueryParam("symbol", symbol).Get(p.apiURL)
 	if err != nil {
 		return 0, fmt.Errorf("failed to fetch info: %w", err)
 	}

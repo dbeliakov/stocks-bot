@@ -15,10 +15,10 @@ type Bot struct {
 	stocksProvider stocks.Provider
 	states         map[int64]*Processor
 	replies        chan Reply
-	storage        *storage.Storage
+	storage        storage.Storage
 }
 
-func NewBot(apiKey string, provider stocks.Provider, storage *storage.Storage) (*Bot, error) {
+func NewBot(apiKey string, provider stocks.Provider, storage storage.Storage) (*Bot, error) {
 	impl, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new bot: %w", err)
