@@ -1,5 +1,9 @@
 # Stocks Telegram Bot
 
+![Tests](https://github.com/dbeliakov/stocks-bot/workflows/tests/badge.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/dbeliakov/stocks-bot/badge.svg?branch=master)](https://coveralls.io/github/dbeliakov/stocks-bot?branch=master)
+
+
 Телеграм-бот для получения информации о текущем курсе акций. Позволяет узнать текущую стоимость любой акции, а также сохранить список интересующих акций и получать актуальную информацию по ним.
 
 Доступные команды:
