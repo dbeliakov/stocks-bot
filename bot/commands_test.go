@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	testChatID int64 = 42
-	testSymbol       = "AAA"
-	testPrice        = 4.2
+	testChatID int64   = 42
+	testSymbol string  = "AAA"
+	testPrice  float64 = 4.2
 )
 
 var (
