@@ -30,7 +30,7 @@ jobs:
         with:
           go-version: 1.15
       - name: Install goveralls
-        run: go get -u github.com/mattn/goveralls
+        run: GO111MODULE=off go get -u github.com/mattn/goveralls
       - name: Run tests
         run: go test -race -covermode=atomic -coverprofile=$GITHUB_WORKSPACE/profile.cov ./...
       - name: Submit coverage
