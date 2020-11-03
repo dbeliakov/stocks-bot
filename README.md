@@ -1,6 +1,7 @@
 # Stocks Telegram Bot
 
 ![Tests](https://github.com/dbeliakov/stocks-bot/workflows/tests/badge.svg?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dbeliakov/stocks-bot)](https://goreportcard.com/report/github.com/dbeliakov/stocks-bot)
 [![Coverage Status](https://coveralls.io/repos/github/dbeliakov/stocks-bot/badge.svg?branch=master)](https://coveralls.io/github/dbeliakov/stocks-bot?branch=master)
 
 
