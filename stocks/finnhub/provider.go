@@ -40,9 +40,7 @@ func (p *Provider) CurrentPrice(symbol string) (float64, error) {
 	}
 
 	var c currentPriceResponse
-	if err := json.Unmarshal(resp.Body(), &c); err != nil {
-		return 0, fmt.Errorf("failed to unmarshal data: %w", err)
-	}
+	err = json.Unmarshal(resp.Body(), &c)
 
 	if c.CurrentPrice == 0 {
 		return 0, errors.New("symbol not found")
