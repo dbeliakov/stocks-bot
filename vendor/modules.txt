@@ -1,0 +1,37 @@
+# github.com/davecgh/go-spew v1.1.0
+github.com/davecgh/go-spew/spew
+# github.com/go-resty/resty/v2 v2.3.0
+## explicit
+github.com/go-resty/resty/v2
+# github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
+## explicit
+github.com/go-telegram-bot-api/telegram-bot-api
+# github.com/golang/mock v1.4.4
+## explicit
+github.com/golang/mock/gomock
+# github.com/karlseguin/ccache v2.0.3+incompatible
+## explicit
+github.com/karlseguin/ccache
+# github.com/karlseguin/expect v1.0.7
+## explicit
+# github.com/looplab/fsm v0.2.0
+## explicit
+github.com/looplab/fsm
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/stretchr/testify v1.6.1
+## explicit
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+# github.com/technoweenie/multipartstreamer v1.0.1
+## explicit
+github.com/technoweenie/multipartstreamer
+# go.etcd.io/bbolt v1.3.5
+## explicit
+go.etcd.io/bbolt
+# golang.org/x/net v0.0.0-20200513185701-a91f0712d120
+golang.org/x/net/publicsuffix
+# golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
+golang.org/x/sys/unix
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
