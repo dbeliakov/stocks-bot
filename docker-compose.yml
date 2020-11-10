@@ -2,7 +2,7 @@ version: "3.8"
 services:
   stocks-bot:
     restart: always
-    image: dbeliakov/stocks-bot
+    image: dbeliakov/stocks-bot:latest
     container_name: stocks-bot
     env_file:
     - secrets.env
