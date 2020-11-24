@@ -3,7 +3,10 @@ package main
 import (
 	"flag"
 	"log"
+	"net/http"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/dbeliakov/stocks-bot/bot"
 	"github.com/dbeliakov/stocks-bot/stocks"
@@ -38,6 +41,15 @@ func main() {
 	if err := s.Init(); err != nil {
 		log.Fatalf("Failed to init storage: %+v", err)
 	}
+
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	go func() {
+		if err := http.ListenAndServe(":2112", mux); err != nil {
+			log.Fatalf("Failed to crease server: %+v", err)
+		}
+	}()
 
 	b, err := bot.NewBot(tgToken, p, s)
 	if err != nil {

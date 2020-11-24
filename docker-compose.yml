@@ -6,3 +6,12 @@ services:
     container_name: stocks-bot
     env_file:
     - secrets.env
+    expose:
+    - 2112
+    networks:
+    - monitor-net
+
+networks:
+  monitor-net:
+    external:
+      name: dockprom_monitor-net

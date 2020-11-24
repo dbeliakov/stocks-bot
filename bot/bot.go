@@ -5,17 +5,19 @@ import (
 	"log"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/dbeliakov/stocks-bot/stocks"
 	"github.com/dbeliakov/stocks-bot/storage"
 )
 
 type Bot struct {
-	api            *tgbotapi.BotAPI
-	stocksProvider stocks.Provider
-	states         map[int64]*Processor
-	replies        chan Reply
-	storage        storage.Storage
+	api                  *tgbotapi.BotAPI
+	stocksProvider       stocks.Provider
+	states               map[int64]*Processor
+	replies              chan Reply
+	storage              storage.Storage
+	totalMessagesCounter prometheus.Counter
 }
 
 func NewBot(apiKey string, provider stocks.Provider, storage storage.Storage) (*Bot, error) {
@@ -23,13 +25,19 @@ func NewBot(apiKey string, provider stocks.Provider, storage storage.Storage) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new bot: %w", err)
 	}
-	return &Bot{
+	b := &Bot{
 		api:            impl,
 		stocksProvider: provider,
 		states:         make(map[int64]*Processor),
 		replies:        make(chan Reply),
 		storage:        storage,
-	}, nil
+		totalMessagesCounter: prometheus.NewCounter(prometheus.CounterOpts{
+			Namespace: "stocks_bot",
+			Name:      "total_messages",
+		}),
+	}
+	prometheus.MustRegister(b.totalMessagesCounter)
+	return b, nil
 }
 
 func (b *Bot) Run() error {
@@ -54,6 +62,9 @@ func (b *Bot) processMessages(updates tgbotapi.UpdatesChannel) {
 		if update.Message == nil { // ignore any non-Message Updates
 			continue
 		}
+
+		b.totalMessagesCounter.Inc()
+
 		m := update.Message
 		processor, found := b.states[m.Chat.ID]
 		if !found {
