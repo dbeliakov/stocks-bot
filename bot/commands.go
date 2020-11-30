@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/looplab/fsm"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/dbeliakov/stocks-bot/stocks"
 	"github.com/dbeliakov/stocks-bot/storage"
@@ -51,6 +52,8 @@ type Processor struct {
 	messages chan<- Reply
 	provider stocks.Provider
 	storage  storage.Storage
+	success  prometheus.Counter
+	error    prometheus.Counter
 }
 
 type IncomingMessage struct {
@@ -63,12 +66,15 @@ type Reply struct {
 	Message string
 }
 
-func NewProcessor(provider stocks.Provider, storage storage.Storage, chatID int64, messages chan<- Reply) *Processor {
+func NewProcessor(provider stocks.Provider, storage storage.Storage, chatID int64,
+	messages chan<- Reply, successReplies, errorReplies prometheus.Counter) *Processor {
 	p := &Processor{
 		messages: messages,
 		provider: provider,
 		chatID:   chatID,
 		storage:  storage,
+		success:  successReplies,
+		error:    errorReplies,
 	}
 	p.m = fsm.NewFSM(
 		Init,
@@ -226,6 +232,11 @@ func (p *Processor) showMy(event *fsm.Event) {
 }
 
 func (p *Processor) toReply(text string) Reply {
+	if text == InternalErrorText || text == UnsupportedTransitionText {
+		p.error.Inc()
+	} else {
+		p.success.Inc()
+	}
 	return Reply{
 		ChatID:  p.chatID,
 		Message: text,
