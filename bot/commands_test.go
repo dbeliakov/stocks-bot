@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/stretchr/testify/require"
 
 	mockprovider "github.com/dbeliakov/stocks-bot/stocks/mock"
@@ -39,7 +40,7 @@ func TestCurrentPrice(t *testing.T) {
 	}).AnyTimes()
 	replies := make(chan Reply, 1)
 
-	p := NewProcessor(mp, ms, testChatID, replies)
+	p := NewProcessor(mp, ms, testChatID, replies, newTestCounter(), newTestCounter())
 	p.Process(IncomingMessage{
 		Command: "price",
 		Message: "",
@@ -85,7 +86,7 @@ func TestSymbolsList(t *testing.T) {
 
 	replies := make(chan Reply, 1)
 
-	p := NewProcessor(mp, ms, testChatID, replies)
+	p := NewProcessor(mp, ms, testChatID, replies, newTestCounter(), newTestCounter())
 	p.Process(IncomingMessage{
 		Command: "my",
 		Message: "",
@@ -144,4 +145,8 @@ func getReply(t *testing.T, m <-chan Reply) Reply {
 		require.Fail(t, "No reply in chan")
 		return Reply{}
 	}
+}
+
+func newTestCounter() prometheus.Counter {
+	return prometheus.NewCounter(prometheus.CounterOpts{})
 }

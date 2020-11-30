@@ -7,17 +7,23 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/dbeliakov/stocks-bot/metrics"
 	"github.com/dbeliakov/stocks-bot/stocks"
 	"github.com/dbeliakov/stocks-bot/storage"
 )
 
 type Bot struct {
-	api                  *tgbotapi.BotAPI
-	stocksProvider       stocks.Provider
-	states               map[int64]*Processor
-	replies              chan Reply
-	storage              storage.Storage
-	totalMessagesCounter prometheus.Counter
+	api            *tgbotapi.BotAPI
+	stocksProvider stocks.Provider
+	states         map[int64]*Processor
+	replies        chan Reply
+	storage        storage.Storage
+
+	totalIncoming  prometheus.Counter
+	totalReplies   prometheus.Counter
+	successReplies prometheus.Counter
+	errorReplies   prometheus.Counter
+	processingTime prometheus.Histogram
 }
 
 func NewBot(apiKey string, provider stocks.Provider, storage storage.Storage) (*Bot, error) {
@@ -25,19 +31,19 @@ func NewBot(apiKey string, provider stocks.Provider, storage storage.Storage) (*
 	if err != nil {
 		return nil, fmt.Errorf("failed to create new bot: %w", err)
 	}
-	b := &Bot{
+	return &Bot{
 		api:            impl,
 		stocksProvider: provider,
 		states:         make(map[int64]*Processor),
 		replies:        make(chan Reply),
 		storage:        storage,
-		totalMessagesCounter: prometheus.NewCounter(prometheus.CounterOpts{
-			Namespace: "stocks_bot",
-			Name:      "total_messages",
-		}),
-	}
-	prometheus.MustRegister(b.totalMessagesCounter)
-	return b, nil
+
+		totalIncoming:  metrics.NewCounter("total_incoming"),
+		totalReplies:   metrics.NewCounter("total_replies"),
+		successReplies: metrics.NewCounter("success_replies"),
+		errorReplies:   metrics.NewCounter("error_replies"),
+		processingTime: metrics.NewHistogram("processing_time"),
+	}, nil
 }
 
 func (b *Bot) Run() error {
@@ -63,27 +69,41 @@ func (b *Bot) processMessages(updates tgbotapi.UpdatesChannel) {
 			continue
 		}
 
-		b.totalMessagesCounter.Inc()
+		b.totalIncoming.Inc()
 
-		m := update.Message
-		processor, found := b.states[m.Chat.ID]
-		if !found {
-			processor = NewProcessor(b.stocksProvider, b.storage, update.Message.Chat.ID, b.replies)
-			b.states[m.Chat.ID] = processor
-		}
-		if m.IsCommand() {
-			processor.Process(IncomingMessage{
-				Command: m.Command(),
-				Message: m.CommandArguments(),
-			})
-		} else {
-			processor.Process(IncomingMessage{Message: m.Text})
-		}
+		b.processMessage(update.Message)
+	}
+}
+
+func (b *Bot) processMessage(m *tgbotapi.Message) {
+	timer := prometheus.NewTimer(b.processingTime)
+	defer timer.ObserveDuration()
+
+	processor, found := b.states[m.Chat.ID]
+	if !found {
+		processor = NewProcessor(
+			b.stocksProvider,
+			b.storage,
+			m.Chat.ID,
+			b.replies,
+			b.successReplies,
+			b.errorReplies,
+		)
+		b.states[m.Chat.ID] = processor
+	}
+	if m.IsCommand() {
+		processor.Process(IncomingMessage{
+			Command: m.Command(),
+			Message: m.CommandArguments(),
+		})
+	} else {
+		processor.Process(IncomingMessage{Message: m.Text})
 	}
 }
 
 func (b *Bot) processReplies() {
 	for r := range b.replies {
+		b.totalReplies.Inc()
 		reply := tgbotapi.NewMessage(r.ChatID, r.Message)
 		if _, err := b.api.Send(reply); err != nil {
 			log.Printf("[WARN] Failed to send message to chat `%d`: %+v", r.ChatID, err)

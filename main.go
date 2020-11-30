@@ -3,12 +3,10 @@ package main
 import (
 	"flag"
 	"log"
-	"net/http"
 	"time"
 
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-
 	"github.com/dbeliakov/stocks-bot/bot"
+	"github.com/dbeliakov/stocks-bot/metrics"
 	"github.com/dbeliakov/stocks-bot/stocks"
 	"github.com/dbeliakov/stocks-bot/stocks/cached"
 	"github.com/dbeliakov/stocks-bot/stocks/finnhub"
@@ -30,6 +28,18 @@ const (
 	finnhubURL = "https://finnhub.io/api/v1/quote"
 )
 
+func runHeartbeat() {
+	const timeStep = time.Second
+
+	counter := metrics.NewCounter("heartbeat")
+	go func() {
+		for {
+			counter.Inc()
+			time.Sleep(timeStep)
+		}
+	}()
+}
+
 func main() {
 	var p stocks.Provider = finnhub.NewProvider(finnhubURL, finnhubToken)
 	p = cached.NewProvider(p, 1000, time.Minute)
@@ -42,14 +52,12 @@ func main() {
 		log.Fatalf("Failed to init storage: %+v", err)
 	}
 
-	mux := http.NewServeMux()
-	mux.Handle("/metrics", promhttp.Handler())
-
 	go func() {
-		if err := http.ListenAndServe(":2112", mux); err != nil {
-			log.Fatalf("Failed to crease server: %+v", err)
+		if err := metrics.RunServer(":2112"); err != nil {
+			log.Fatalf("Failed to start server: %+v", err)
 		}
 	}()
+	runHeartbeat()
 
 	b, err := bot.NewBot(tgToken, p, s)
 	if err != nil {
