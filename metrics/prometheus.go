@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	namespace = "stocks_bot"
+	namespace = "stocks_bot_1"
 )
 
 func NewCounter(name string) prometheus.Counter {
