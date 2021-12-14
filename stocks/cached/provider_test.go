@@ -24,7 +24,7 @@ func TestProvider_CurrentPrice(t *testing.T) {
 
 	p := NewProvider(mp, 1, testTTL)
 	price, err := p.CurrentPrice(testSymbol)
-	require.NoError(t, err, "Failed to get current price")
+	require.Error(t, err, "Failed to get current price")
 	require.Equal(t, testPrice, price, "Incorrect price returned")
 }
 
